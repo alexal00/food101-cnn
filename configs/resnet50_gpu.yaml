@@ -1,0 +1,66 @@
+project:
+  name: food101_cnn
+  seed: 42
+
+data:
+  root_dir: data/raw
+  processed_dir: data/processed
+  use_official_split: true
+  validation_fraction: 0.15
+  image_size: 224
+  cache_resized: true
+  correct_exif_orientation: true
+
+augmentation:
+  horizontal_flip_p: 0.5
+  color_jitter:
+    brightness: 0.15
+    contrast: 0.15
+    saturation: 0.10
+    hue: 0.03
+  rotation_degrees: 10
+  vertical_flip: false
+  random_erasing: false
+  mixup: false
+  cutmix: false
+
+model:
+  name: resnet50
+  version: v1
+  pretrained: true
+  num_classes: 101
+  dropout: 0.3
+  freeze_backbone_initially: true
+
+training:
+  batch_size: 32
+  epochs_head: 8
+  epochs_finetune: 35
+  optimizer: adam
+  lr_head: 0.001
+  lr_finetune: 0.00001
+  weight_decay: 0.0001
+  label_smoothing: 0.1
+  early_stopping_patience: 8
+  scheduler: reduce_on_plateau
+  mixed_precision: true
+  gradient_accumulation_steps: 1
+  device: cuda
+
+evaluation:
+  top_k: 5
+  compute_macro_f1: true
+  compute_confusion_matrix: true
+  compute_calibration: true
+  save_misclassified: true
+  measure_latency: true
+
+inference:
+  threshold: 0.40
+  export_pt: true
+  export_onnx: true
+
+logging:
+  tensorboard_dir: outputs/tensorboard
+  checkpoint_dir: outputs/checkpoints
+  figures_dir: outputs/figures

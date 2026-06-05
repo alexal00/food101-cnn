@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS metadata
+.DS_Store
+
+# Local editor/project notes
+.obsidian/
+.vscode/
+ObsidianNotes/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local and generated data
+data/raw/**
+data/processed/**
+data/reports/**
+outputs/**
+
+# Model/checkpoint/archive artifacts
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.h5
+*.keras
+*.tar.gz
+*.pdf
+
+# Keep directory placeholders.
+!data/raw/
+!data/raw/.gitkeep
+!data/processed/
+!data/processed/.gitkeep
+!data/reports/
+!data/reports/.gitkeep
+!outputs/
+!outputs/**/
+!outputs/**/.gitkeep
+
+# Notebook checkpoints
+.ipynb_checkpoints/
