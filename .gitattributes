@@ -1,0 +1,4 @@
+data/processed/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+data/processed/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+data/processed/**/*.png filter=lfs diff=lfs merge=lfs -text
+data/processed/**/*.webp filter=lfs diff=lfs merge=lfs -text
