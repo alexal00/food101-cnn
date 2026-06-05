@@ -47,6 +47,23 @@ def test_load_simple_baseline_config() -> None:
     assert config["training"]["epochs_finetune"] == 30
 
 
+def test_config_profiles_use_project_relative_paths() -> None:
+    config_dir = Path("configs")
+
+    assert not list(config_dir.glob("*_colab.yaml"))
+
+    for config_path in config_dir.glob("*.yaml"):
+        config = load_config(config_path, validate_paths=False)
+        path_values = [
+            config["data"]["root_dir"],
+            config["data"]["processed_dir"],
+            config["logging"]["tensorboard_dir"],
+            config["logging"]["checkpoint_dir"],
+            config["logging"]["figures_dir"],
+        ]
+        assert all(not Path(value).is_absolute() for value in path_values), config_path
+
+
 def test_load_config_resolves_relative_path_from_project_root(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

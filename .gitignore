@@ -9,6 +9,11 @@ __pycache__/
 # OS metadata
 .DS_Store
 
+# Local editor/project notes
+.obsidian/
+.vscode/
+ObsidianNotes/
+
 # Virtual environments
 .venv/
 venv/
@@ -28,6 +33,7 @@ outputs/**
 *.h5
 *.keras
 *.tar.gz
+*.pdf
 
 # Keep directory placeholders.
 !data/raw/

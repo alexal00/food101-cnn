@@ -9,6 +9,7 @@ from food101_cnn.utils.runs import (
     create_run_paths,
     infer_run_name_from_path,
     latest_run_for_model,
+    list_incomplete_run_dirs,
     manifest_to_comparison_row,
     manifest_with_resolved_artifacts,
     resolve_manifest_artifact,
@@ -61,6 +62,21 @@ def test_latest_run_for_model_uses_filename_timestamp(tmp_path: Path) -> None:
     assert latest["run_name"] == newer.run_name
 
 
+def test_list_incomplete_run_dirs_returns_missing_manifest_dirs(tmp_path: Path) -> None:
+    run_root = tmp_path / "outputs" / "runs"
+    complete = run_root / "baseline_cnn_20260601-1200_v1"
+    incomplete = run_root / "baseline_cnn_20260601-1300_v1"
+    complete.mkdir(parents=True)
+    incomplete.mkdir(parents=True)
+    (complete / "manifest.json").write_text("{}", encoding="utf-8")
+
+    results = list_incomplete_run_dirs(tmp_path)
+
+    assert [item.run_dir for item in results] == [incomplete]
+    assert results[0].run_name == incomplete.name
+    assert results[0].reason == "missing_manifest_json"
+
+
 def test_manifest_to_comparison_row() -> None:
     row = manifest_to_comparison_row(
         {
@@ -85,20 +101,20 @@ def test_manifest_to_comparison_row() -> None:
     assert row["latency_ms"] == 12.0
 
 
-def test_resolve_manifest_artifact_rehomes_copied_colab_paths(tmp_path: Path) -> None:
+def test_resolve_manifest_artifact_rehomes_copied_absolute_run_paths(tmp_path: Path) -> None:
     config = load_config("configs/convnext_tiny.yaml")
     paths = create_run_paths(tmp_path, build_run_name(config, timestamp="20260602-1258"))
     paths.best_checkpoint_path.write_bytes(b"checkpoint")
     paths.manifest_path.write_text("{}", encoding="utf-8")
 
-    drive_checkpoint = (
-        "/content/drive/MyDrive/food101-cnn/outputs/runs/"
+    copied_checkpoint = (
+        "/tmp/remote_archive/outputs/runs/"
         f"{paths.run_name}/checkpoints/{paths.run_name}_best_model.pt"
     )
     manifest = {
         "_manifest_path": str(paths.manifest_path),
         "run_name": paths.run_name,
-        "artifacts": {"checkpoint": drive_checkpoint},
+        "artifacts": {"checkpoint": copied_checkpoint},
     }
 
     assert (
