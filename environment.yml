@@ -1,0 +1,21 @@
+name: food101-cnn
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip>=23
+  - ipykernel
+  - jupyter
+  - matplotlib
+  - numpy
+  - pandas
+  - pillow
+  - pyyaml
+  - scikit-learn
+  - tensorboard
+  - tqdm
+  - pytest
+  - pip:
+      - torch>=2.2
+      - torchvision>=0.17
+      - -e .

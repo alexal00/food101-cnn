@@ -1,0 +1,70 @@
+project:
+  name: food101_cnn
+  seed: 42
+
+data:
+  root_dir: data/raw
+  processed_dir: data/processed
+  use_official_split: true
+  validation_fraction: 0.15
+  image_size: 224
+  cache_resized: true
+  correct_exif_orientation: true
+
+augmentation:
+  horizontal_flip_p: 0.5
+  color_jitter:
+    brightness: 0.15
+    contrast: 0.15
+    saturation: 0.10
+    hue: 0.03
+  rotation_degrees: 10
+  vertical_flip: false
+  random_erasing: false
+  mixup: false
+  cutmix: false
+
+model:
+  name: baseline_cnn_simple
+  version: vfull1
+  pretrained: false
+  num_classes: 101
+  dropout: 0.3
+  freeze_backbone_initially: false
+
+training:
+  device: cuda
+  batch_size: 64
+  epochs: 30
+  epochs_head: 0
+  epochs_finetune: 30
+  optimizer: adam
+  learning_rate: 0.001
+  lr_head: 0.001
+  lr_finetune: 0.001
+  weight_decay: 0.0001
+  scheduler: reduce_on_plateau
+  early_stopping_patience: 8
+  label_smoothing: 0.1
+  mixed_precision: true
+  num_workers: 2
+  gradient_accumulation_steps: 1
+
+evaluation:
+  top_k: 5
+  compute_macro_f1: true
+  compute_confusion_matrix: true
+  compute_calibration: true
+  save_misclassified: true
+  measure_latency: true
+
+inference:
+  threshold: 0.40
+  export_pt: true
+  export_onnx: false
+
+logging:
+  tensorboard: true
+  tensorboard_dir: outputs/tensorboard
+  checkpoint_dir: outputs/checkpoints
+  figures_dir: outputs/figures
