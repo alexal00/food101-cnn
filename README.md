@@ -105,19 +105,19 @@ Main configs:
 
 - `configs/efficientnet_b0.yaml`: recommended local transfer-learning model.
 - `configs/baseline_cnn.yaml`: CNN-from-scratch baseline.
-- `configs/baseline_cnn_simple.yaml`: simpler CNN architecture using the same full Colab-style baseline schedule as `baseline_cnn_colab`.
+- `configs/baseline_cnn_simple.yaml`: simpler CNN architecture using the same full GPU-style baseline schedule as `baseline_cnn_gpu`.
 - `configs/baseline_cnn_local.yaml`: the same simpler CNN architecture with conservative Mac/local training limits.
 - `configs/resnet50.yaml`: reference transfer-learning backbone.
 - `configs/convnext_tiny.yaml`: modern CNN comparison backbone.
 
-Colab configs:
+GPU/cloud configs:
 
-- `configs/baseline_cnn_colab.yaml`
-- `configs/efficientnet_b0_colab.yaml`
-- `configs/resnet50_colab.yaml`
-- `configs/convnext_tiny_colab.yaml`
+- `configs/baseline_cnn_gpu.yaml`
+- `configs/efficientnet_b0_gpu.yaml`
+- `configs/resnet50_gpu.yaml`
+- `configs/convnext_tiny_gpu.yaml`
 
-The Colab configs use Google Drive paths under `/content/drive/MyDrive/food101-cnn/`, CUDA as the preferred device, mixed precision, and moderate batch sizes. The Colab notebook also trains `baseline_cnn_local` and `baseline_cnn_simple` from their main configs so those variants keep distinct run names. CLI overrides can still adjust `--batch-size`, `--device`, `--mixed-precision`, `--no-mixed-precision`, `--gradient-accumulation-steps`, and `--resume-checkpoint`.
+The GPU/cloud configs use project-relative data and output paths, CUDA as the preferred device, mixed precision, and larger batch sizes. The training notebook also trains `baseline_cnn_local` and `baseline_cnn_simple` from their main configs so those variants keep distinct run names. CLI overrides can still adjust `--batch-size`, `--device`, `--mixed-precision`, `--no-mixed-precision`, `--gradient-accumulation-steps`, and `--resume-checkpoint`.
 
 Important fields:
 
@@ -139,25 +139,30 @@ Open:
 jupyter lab notebooks/food101_CNN_final_project.ipynb
 ```
 
-The notebook is designed to run top-to-bottom after setup. Expensive cells are guarded by flags near the top:
+The final notebook is designed as the report surface. It should be run after
+data preparation, training, evaluation, and export have produced local
+artifacts. Action cells are guarded by flags near the top and default to report
+mode:
 
 ```python
 RUN_DATA_PREP = False
 RUN_TRAINING = False
 RUN_FINAL_EVAL = False
+RUN_POSTPROCESSING = False
 RUN_INFERENCE_EXPORT = False
 ```
 
-Default execution performs smoke checks only: config loading, transform shapes, model forward pass, synthetic training loop, metrics, calibration, misclassification analysis, and export placeholders.
+Default execution loads existing manifests/reports and performs lightweight
+smoke checks only: config loading, transform shapes, model forward pass,
+synthetic training loop, metrics, calibration, misclassification analysis, and
+export placeholders.
 
 Recommended notebook usage:
 
 1. Run once with all flags `False` to verify imports and local environment.
-2. Run the CLI data preparation commands below to create the dataset index and validation reports.
-3. Set `RUN_DATA_PREP = True` only when downloading/indexing/validating Food-101 from inside the notebook is desired.
-4. Train models through the CLI for reproducibility and controlled logs.
-5. Use notebook sections 10-17 to load latest run manifests and summarize comparison outputs from `outputs/runs/`.
-6. Enable `RUN_INFERENCE_EXPORT = True` only after a run checkpoint exists under `outputs/runs/<run_name>/checkpoints/`.
+2. Generate runs through `scripts/run_experiment_plan.py`, individual CLI scripts, or `notebooks/food101_colab_training.ipynb`.
+3. Keep action flags disabled for normal final-report execution.
+4. Use notebook sections 10-17 to load latest run manifests and summarize comparison outputs from `outputs/runs/`.
 
 Notebook execution check:
 
@@ -177,87 +182,32 @@ Use Visual Studio Code for editing locally, then run the dedicated Colab noteboo
 notebooks/food101_colab_training.ipynb
 ```
 
-Colab cannot see files that exist only on the local machine. To use Colab as a
-GPU accelerator, stage a copy of the repository and data into a filesystem Colab
-can read:
+Colab cannot see files that exist only on the local machine. The training
+notebook therefore clones the configured GitHub branch into
+`/content/food101-cnn` each session, installs the package, and keeps data and
+routine run outputs in the temporary Colab runtime. Google Drive is mounted only
+to archive selected final complete runs.
 
-- Recommended transfer bundle: create a local archive, upload it to Drive, and
-  let the notebook unpack it into `/content/food101-cnn`.
-
-```bash
-python scripts/create_colab_bundle.py
-```
-
-Upload the generated archive:
-
-```text
-outputs/colab_transfer/food101_colab_bundle.tar.gz
-```
-
-to:
-
-```text
-/content/drive/MyDrive/food101-cnn/transfer/food101_colab_bundle.tar.gz
-```
-
-Then set this in the first Colab setup cell:
-
-```python
-RUN_UNPACK_LOCAL_BUNDLE = True
-```
-
-The default bundle includes repository source, configs, scripts, notebooks,
-`data/reports`, and `data/processed`. This is enough when the resized cached
-images are already available under `data/processed/<hash>/images`. If the
-processed cache is not available, create a larger bundle with raw Food-101:
-
-```bash
-python scripts/create_colab_bundle.py --include-raw-data
-```
-
-Alternative layouts:
-
-- Persistent Drive repo: copy the complete repository to
-  `/content/drive/MyDrive/food101-cnn`, including `pyproject.toml`, `configs/`,
-  `scripts/`, `src/`, and `notebooks/`.
-- Runtime repo: clone/copy the repository to `/content/food101-cnn` each Colab
-  session, while keeping data and artifacts in
-  `/content/drive/MyDrive/food101-cnn`.
-- Custom Drive path: set `REPOSITORY_ROOT_OVERRIDE` in the first Colab notebook
-  setup cell to the folder containing `pyproject.toml` and `src/food101_cnn/`.
-
-The notebook adds `src/` to `PYTHONPATH`, so an editable install is optional
-when the Colab environment already has the required Python dependencies.
-
-Drive remains the default data source. If local data was staged with the bundle
-or manually uploaded with the repository, set this flag in the Colab notebook:
-
-```python
-USE_STAGED_LOCAL_DATA = True
-```
-
-With that flag enabled, the notebook reads the staged `PROJECT_ROOT/data` for
-`reports/dataset_index.csv` and `processed/*/cached_index.csv`. Use
-`STAGED_LOCAL_DATA_ROOT_OVERRIDE` only if the uploaded data directory lives
-somewhere else. Run artifacts still go to
-`/content/drive/MyDrive/food101-cnn/outputs`.
+Drive is not the default data source. The Colab notebook clones the repository
+from GitHub, downloads or caches Food-101 inside `/content/food101-cnn/data`,
+and writes temporary run artifacts under `/content/food101-runs`. Drive is used
+only when explicitly archiving selected final complete runs.
 
 The Colab notebook:
 
 - mounts Google Drive,
-- stores persistent data under `/content/drive/MyDrive/food101-cnn/data`,
-- optionally unpacks a locally created transfer bundle,
-- optionally reads staged local data when `USE_STAGED_LOCAL_DATA=True`,
-- stores run artifacts under `/content/drive/MyDrive/food101-cnn/outputs/runs`,
+- clones the configured GitHub branch into `/content/food101-cnn`,
+- stores temporary data under `/content/food101-cnn/data`,
+- stores temporary run artifacts under `/content/food101-runs`,
+- optionally archives selected final complete runs to Drive,
 - detects the available CUDA GPU,
 - selects moderate batch-size overrides based on GPU memory,
 - reuses the latest cached resized-image index when present,
 - supports resume checkpoints,
-- trains `baseline_cnn_local` for a constrained 10-epoch local-style baseline,
-- trains `baseline_cnn_simple` with the same epoch, batch-size, and mixed-precision policy as `baseline_cnn_colab`,
-- trains the full comparison set through `scripts/train.py`,
-- evaluates each latest run through `scripts/evaluate.py`,
-- exports native `.pt` models through `scripts/export_model.py --skip-onnx`.
+- runs staged model plans through `scripts/run_experiment_plan.py`,
+- delegates training to `scripts/train.py`,
+- delegates evaluation to `scripts/evaluate.py`,
+- delegates native `.pt` exports to `scripts/export_model.py --skip-onnx`.
 
 Colab execution flags:
 
@@ -267,33 +217,32 @@ RUN_IMAGE_CACHE = False
 RUN_TRAINING = False
 RUN_EVALUATION = False
 RUN_EXPORT_PT = False
-RUN_UNPACK_LOCAL_BUNDLE = False
-USE_STAGED_LOCAL_DATA = False
+RUN_ARCHIVE_FINAL_RUNS = False
 ```
+
+The default plan is `gpu-default`, which trains the simple CNN GPU schedule and
+the constrained local-style baseline. Use `PLAN_NAME = "gpu-full"` for the full
+comparison set.
 
 Recommended Colab order:
 
 1. Open `notebooks/food101_colab_training.ipynb` in Colab Pro.
 2. Select a GPU runtime.
-3. If using the repository already uploaded under
-   `/content/drive/MyDrive/food101-cnn`, keep `RUN_UNPACK_LOCAL_BUNDLE=False`.
-   If using an archive bundle instead, upload it to Drive and set
-   `RUN_UNPACK_LOCAL_BUNDLE=True` in the first setup cell.
-4. Run setup cells and confirm Drive is mounted.
-5. Keep `USE_STAGED_LOCAL_DATA=False` for Drive data, or set it to `True`
-   only after staging/uploading `PROJECT_ROOT/data`.
-6. Set `RUN_DATA_PREP=True` only if Food-101/index files do not already exist in the selected data source.
+3. Set `GITHUB_BRANCH` to the branch to test.
+4. Run setup cells and confirm Drive is mounted for final archiving only.
+5. Set `RUN_DATA_PREP=True` only if Food-101/index files do not already exist in the runtime data directory.
 7. Set `RUN_IMAGE_CACHE=True` to create or refresh cached padded-resized images.
 8. Set `RUN_TRAINING=True` to run the staged plan.
 9. Set `RUN_EVALUATION=True` after training to write metrics/reports into each run.
 10. Set `RUN_EXPORT_PT=True` to export `.pt` packages.
-11. Return to `food101_CNN_final_project.ipynb` to load manifests and produce the final comparison.
+11. Set `RUN_ARCHIVE_FINAL_RUNS=True` only for selected final complete runs.
+12. Return to `food101_CNN_final_project.ipynb` to load manifests and produce the final comparison.
 
 Resume example:
 
 ```python
 RESUME_CHECKPOINTS = {
-    "resnet50": "/content/drive/MyDrive/food101-cnn/outputs/runs/resnet50_20260601-2200_v1/checkpoints/resnet50_20260601-2200_v1_best_model.pt",
+    "resnet50": "/content/food101-runs/resnet50_20260601-2200_v1/checkpoints/resnet50_20260601-2200_v1_best_model.pt",
 }
 ```
 
@@ -305,25 +254,21 @@ failure. Uploaded local caches are supported when `cached_index.csv` lives besid
 to that uploaded cache directory.
 
 If training fails with `Config file does not exist: configs/<name>.yaml`, check
-the `project_root` printed by the first setup cell. When the repository is
-updated directly under `/content/drive/MyDrive/food101-cnn`, keep
-`RUN_UNPACK_LOCAL_BUNDLE=False` so the Drive repository is selected. If using an
-archive bundle instead, rebuild and re-upload it, then set
-`OVERWRITE_UNPACKED_BUNDLE=True` once to replace any stale `/content/food101-cnn`
-copy.
+the `project_root` and `github_branch` printed by the first setup cell. Rerun the
+setup cell with `CLONE_FRESH=True` if `/content/food101-cnn` is stale.
 
 Manual Colab command example:
 
 ```bash
 python scripts/train.py \
-  --config configs/resnet50_colab.yaml \
-  --index-csv /content/drive/MyDrive/food101-cnn/data/processed/<cache_hash>/cached_index.csv \
+  --config configs/resnet50_gpu.yaml \
+  --index-csv /content/food101-cnn/data/processed/<cache_hash>/cached_index.csv \
   --epochs 30 \
   --batch-size 32 \
   --device cuda \
   --mixed-precision \
   --num-workers 2 \
-  --run-root /content/drive/MyDrive/food101-cnn/outputs/runs \
+  --run-root /content/food101-runs \
   --log-level INFO
 ```
 
@@ -331,13 +276,13 @@ Manual resume:
 
 ```bash
 python scripts/train.py \
-  --config configs/resnet50_colab.yaml \
-  --index-csv /content/drive/MyDrive/food101-cnn/data/processed/<cache_hash>/cached_index.csv \
-  --resume-checkpoint /content/drive/MyDrive/food101-cnn/outputs/runs/<run_name>/checkpoints/<run_name>_best_model.pt \
+  --config configs/resnet50_gpu.yaml \
+  --index-csv /content/food101-cnn/data/processed/<cache_hash>/cached_index.csv \
+  --resume-checkpoint /content/food101-runs/<run_name>/checkpoints/<run_name>_best_model.pt \
   --epochs 10 \
   --device cuda \
   --mixed-precision \
-  --run-root /content/drive/MyDrive/food101-cnn/outputs/runs
+  --run-root /content/food101-runs
 ```
 
 ## End-to-End CLI Workflow
@@ -462,6 +407,30 @@ This creates:
 - `outputs/final_selected/final_selected_model.pt`
 - `outputs/final_selected/manifest.json`
 
+List incomplete run directories before cleanup:
+
+```bash
+python scripts/clean_runs.py --run-root outputs/runs
+```
+
+A run directory is incomplete when it does not contain `manifest.json`. Deletion
+requires explicit confirmation:
+
+```bash
+python scripts/clean_runs.py --run-root outputs/runs --delete --yes
+```
+
+Update the committed run logbook after final evaluation:
+
+```bash
+python scripts/update_run_logbook.py \
+  --run-root outputs/runs \
+  --output docs/runs_logbook.md
+```
+
+The logbook records only small manifest summaries; checkpoints, figures,
+TensorBoard logs, and dataset images stay out of Git.
+
 ### 5. Monitor TensorBoard
 
 ```bash
@@ -550,5 +519,7 @@ Do not commit:
 - Checkpoints.
 - TensorBoard logs.
 - Generated reports and figures.
+- Local editor settings, personal notes, reference PDFs, and transfer bundles.
 
-Keep final experiment artifacts under `outputs/` and dataset-related generated files under `data/reports/`.
+Keep final experiment artifacts locally under `outputs/` and dataset-related generated files under `data/reports/`.
+Keep only lightweight run summaries such as `docs/runs_logbook.md` in Git.

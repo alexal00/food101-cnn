@@ -74,6 +74,25 @@ def test_final_notebook_is_valid_json_and_has_required_sections() -> None:
     for heading in postprocess_sections:
         assert heading in markdown
 
+    assert "final-report notebook expects to run from a local or cloned repository checkout" in markdown
+    assert "NIPS-2012-imagenet-classification-with-deep-convolutional-neural-networks-Paper.pdf" not in markdown
+
+    code = "\n".join(
+        _cell_source(cell)
+        for cell in notebook["cells"]
+        if cell.get("cell_type") == "code"
+    )
+    assert "RUN_DATA_PREP = False" in code
+    assert "RUN_TRAINING = False" in code
+    assert "RUN_FINAL_EVAL = False" in code
+    assert "RUN_POSTPROCESSING = False" in code
+    assert "RUN_INFERENCE_EXPORT = False" in code
+    assert "RUN_UNPACK_LOCAL_BUNDLE" not in code
+    assert "REPOSITORY_ROOT_OVERRIDE" not in code
+    assert "COLAB_BUNDLE_PATH" not in code
+    assert "google.colab" not in code
+    assert "tarfile" not in code
+    assert "DRIVE_PROJECT_ROOT" not in code
 
 def test_colab_training_notebook_is_valid_json() -> None:
     notebook_path = Path("notebooks/food101_colab_training.ipynb")
@@ -87,7 +106,7 @@ def test_colab_training_notebook_is_valid_json() -> None:
         for cell in notebook["cells"]
         if cell.get("cell_type") == "markdown"
     )
-    assert "Food-101 Colab Pro Training Workflow" in markdown
+    assert "Food-101 Colab GPU Training Workflow" in markdown
     assert "Run Manifest Snapshot" in markdown
 
     code = "\n".join(
@@ -95,17 +114,23 @@ def test_colab_training_notebook_is_valid_json() -> None:
         for cell in notebook["cells"]
         if cell.get("cell_type") == "code"
     )
-    assert "REPOSITORY_ROOT_OVERRIDE" in code
+    assert "GITHUB_REPO_URL" in code
+    assert "GITHUB_BRANCH" in code
+    assert "git" in code
+    assert "clone" in code
     assert "PYTHONPATH" in code
-    assert "RUN_UNPACK_LOCAL_BUNDLE" in code
-    assert "REQUIRED_REPOSITORY_FILES" in code
-    assert "USE_STAGED_LOCAL_DATA" in code
-    assert "ACTIVE_DATA_ROOT" in code
-    assert "check_index_paths" in code
-    assert "project_config_path" in code
+    assert "RUN_ARCHIVE_FINAL_RUNS" in code
+    assert "DRIVE_FINAL_RUN_ROOT" in code
+    assert "PROJECT_ROOT / \"data\"" in code
+    assert "RUN_UNPACK_LOCAL_BUNDLE" not in code
+    assert "REPOSITORY_ROOT_OVERRIDE" not in code
+    assert "USE_STAGED_LOCAL_DATA" not in code
+    assert "scripts/run_experiment_plan.py" in code
+    assert "build_plan_command" in code
+    assert "TRAINING_PLAN" not in code
+    assert "train_command" not in code
+    assert "evaluate_latest_command" not in code
     assert "Last command output" in code
     assert "import food101_cnn" in code
-    assert "baseline_cnn_local" in code
-    assert "baseline_cnn_simple" in code
-    assert "LOCAL_BASELINE_BATCH_SIZE" in code
-    assert "MODEL_BATCH_PROFILE" in code
+    assert "PLAN_NAME" in code
+    assert "PLAN_MODELS" in code

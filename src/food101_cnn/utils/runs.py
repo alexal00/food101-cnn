@@ -31,6 +31,15 @@ class RunPaths:
     best_checkpoint_path: Path
 
 
+@dataclass(frozen=True)
+class IncompleteRunDirectory:
+    """Run directory missing the manifest that marks completed runs."""
+
+    run_name: str
+    run_dir: Path
+    reason: str
+
+
 def current_run_timestamp(timezone: str = LOCAL_TIMEZONE) -> str:
     """Return a local timestamp for run names."""
     return datetime.now(ZoneInfo(timezone)).strftime("%Y%m%d-%H%M")
@@ -220,6 +229,36 @@ def latest_run_for_model(
     return None
 
 
+def list_incomplete_run_dirs(
+    project_root: str | Path,
+    *,
+    run_root: str | Path = "outputs/runs",
+) -> list[IncompleteRunDirectory]:
+    """Return direct run directories that do not contain ``manifest.json``."""
+    root = Path(project_root).resolve()
+    root_dir = Path(run_root)
+    if not root_dir.is_absolute():
+        root_dir = root / root_dir
+    if not root_dir.is_dir():
+        return []
+
+    incomplete: list[IncompleteRunDirectory] = []
+    for child in sorted(root_dir.iterdir()):
+        if not child.is_dir():
+            continue
+        manifest_path = child / "manifest.json"
+        if manifest_path.is_file():
+            continue
+        incomplete.append(
+            IncompleteRunDirectory(
+                run_name=child.name,
+                run_dir=child,
+                reason="missing_manifest_json",
+            )
+        )
+    return incomplete
+
+
 def select_best_run(
     manifests: list[dict[str, Any]],
     *,
@@ -252,7 +291,7 @@ def resolve_manifest_path(
     project_root: str | Path | None = None,
     run_root: str | Path = "outputs/runs",
 ) -> Path | None:
-    """Resolve a manifest path, rehoming copied Drive artifacts when needed."""
+    """Resolve a manifest path, rehoming copied run artifacts when needed."""
     if path is None:
         return None
 

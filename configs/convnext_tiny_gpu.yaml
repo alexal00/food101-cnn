@@ -3,8 +3,8 @@ project:
   seed: 42
 
 data:
-  root_dir: /content/drive/MyDrive/food101-cnn/data/raw
-  processed_dir: /content/drive/MyDrive/food101-cnn/data/processed
+  root_dir: data/raw
+  processed_dir: data/processed
   use_official_split: true
   validation_fraction: 0.15
   image_size: 224
@@ -25,7 +25,7 @@ augmentation:
   cutmix: false
 
 model:
-  name: efficientnet_b0
+  name: convnext_tiny
   version: v1
   pretrained: true
   num_classes: 101
@@ -33,9 +33,9 @@ model:
   freeze_backbone_initially: true
 
 training:
-  batch_size: 32
+  batch_size: 24
   epochs_head: 8
-  epochs_finetune: 40
+  epochs_finetune: 35
   optimizer: adam
   lr_head: 0.001
   lr_finetune: 0.00001
@@ -61,6 +61,6 @@ inference:
   export_onnx: true
 
 logging:
-  tensorboard_dir: /content/drive/MyDrive/food101-cnn/outputs/tensorboard
-  checkpoint_dir: /content/drive/MyDrive/food101-cnn/outputs/checkpoints
-  figures_dir: /content/drive/MyDrive/food101-cnn/outputs/figures
+  tensorboard_dir: outputs/tensorboard
+  checkpoint_dir: outputs/checkpoints
+  figures_dir: outputs/figures
