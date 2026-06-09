@@ -54,21 +54,29 @@ def main() -> None:
     if not plan:
         raise ValueError("Selected plan is empty.")
 
-    execute = any(
+    requested_actions = any(
         [args.data_prep, args.cache_images, args.train, args.evaluate, args.export_pt]
-    ) and not args.dry_run
+    )
+    execute = requested_actions and not args.dry_run
 
-    commands: list[list[str]] = []
     if args.data_prep:
-        commands.extend(data_prep_commands(args.python, args.data_config, index_csv, project_root))
+        for command in data_prep_commands(args.python, args.data_config, index_csv, project_root):
+            run_command(command, cwd=project_root, execute=execute)
     if args.cache_images:
-        commands.append(cache_command(args.python, args.data_config, index_csv, cache_root))
+        run_command(
+            cache_command(args.python, args.data_config, index_csv, cache_root),
+            cwd=project_root,
+            execute=execute,
+        )
+
+    active_index_csv = selected_index_csv(index_csv, cache_root)
+
     if args.train:
-        commands.extend(
-            train_command(
+        for item in plan:
+            command = train_command(
                 args.python,
                 item,
-                index_csv=selected_index_csv(index_csv, cache_root),
+                index_csv=active_index_csv,
                 run_root=run_root,
                 memory_gb=memory_gb,
                 device=args.device,
@@ -77,11 +85,7 @@ def main() -> None:
                 max_batches=args.max_batches,
                 log_level=args.log_level,
             )
-            for item in plan
-        )
-
-    for command in commands:
-        run_command(command, cwd=project_root, execute=execute)
+            run_command(command, cwd=project_root, execute=execute)
 
     if args.evaluate:
         for item in plan:
@@ -89,7 +93,7 @@ def main() -> None:
                 args.python,
                 item,
                 project_root=project_root,
-                index_csv=selected_index_csv(index_csv, cache_root),
+                index_csv=active_index_csv,
                 run_root=run_root,
                 memory_gb=memory_gb,
                 device=args.device,
@@ -111,7 +115,7 @@ def main() -> None:
             if command is not None:
                 run_command(command, cwd=project_root, execute=execute)
 
-    if not any([args.data_prep, args.cache_images, args.train, args.evaluate, args.export_pt]):
+    if not requested_actions:
         print_plan(plan, memory_gb=memory_gb)
 
 

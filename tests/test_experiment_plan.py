@@ -2,6 +2,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import scripts.run_experiment_plan as runner
 from food101_cnn.utils.experiment_plan import (
     adaptive_batch_size,
     filter_training_plan,
@@ -71,3 +72,63 @@ def test_run_experiment_plan_dry_run_prints_train_commands(tmp_path: Path) -> No
     assert "configs/baseline_cnn_simple.yaml" in result.stdout
     assert "configs/baseline_cnn_local.yaml" in result.stdout
     assert str(run_root) in result.stdout
+
+
+def test_run_experiment_plan_resolves_cache_after_cache_step(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    index_csv = tmp_path / "dataset_index.csv"
+    cache_root = tmp_path / "processed"
+    run_root = tmp_path / "runs"
+    cached_index = cache_root / "cachehash" / "cached_index.csv"
+    executed_commands: list[list[str]] = []
+
+    def fake_run_command(command: list[str], *, cwd: Path, execute: bool) -> None:
+        executed_commands.append(command)
+        if "scripts/cache_images.py" in command:
+            cached_index.parent.mkdir(parents=True)
+            cached_index.write_text("split,label_index,image_path\n", encoding="utf-8")
+
+    monkeypatch.setattr(runner, "run_command", fake_run_command)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_experiment_plan.py",
+            "--plan",
+            "gpu-default",
+            "--model",
+            "baseline_cnn_simple",
+            "--cache-images",
+            "--train",
+            "--index-csv",
+            str(index_csv),
+            "--cache-root",
+            str(cache_root),
+            "--run-root",
+            str(run_root),
+            "--gpu-memory-gb",
+            "35",
+            "--python",
+            sys.executable,
+        ],
+    )
+
+    runner.main()
+
+    cache_command_index = next(
+        index
+        for index, command in enumerate(executed_commands)
+        if "scripts/cache_images.py" in command
+    )
+    train_command_index = next(
+        index
+        for index, command in enumerate(executed_commands)
+        if "scripts/train.py" in command
+    )
+    train_command = executed_commands[train_command_index]
+
+    assert cache_command_index < train_command_index
+    assert str(cached_index) in train_command
+    assert str(index_csv) not in train_command
