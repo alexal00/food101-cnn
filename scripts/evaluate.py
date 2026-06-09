@@ -92,8 +92,7 @@ def main() -> None:
         dataset,
         batch_size=args.batch_size or int(config["training"]["batch_size"]),
         shuffle=False,
-        num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
+        **_loader_kwargs(args.num_workers, pin_memory=device.type == "cuda"),
     )
 
     model = build_model_from_config(config)
@@ -130,8 +129,9 @@ def main() -> None:
             ]
             cursor += batch_size
 
-            inputs = inputs.to(device)
-            targets = targets.to(device)
+            non_blocking = device.type == "cuda"
+            inputs = inputs.to(device, non_blocking=non_blocking)
+            targets = targets.to(device, non_blocking=non_blocking)
             logits = model(inputs)
             loss = criterion(logits, targets)
 
@@ -250,6 +250,18 @@ def main() -> None:
 def _class_names_from_dataset(dataset) -> list[str]:
     mapping = {record.label_index: record.label for record in dataset.records}
     return [mapping[index] for index in sorted(mapping)]
+
+
+def _loader_kwargs(num_workers: int, *, pin_memory: bool) -> dict[str, object]:
+    """Return DataLoader options tuned for GPU evaluation throughput."""
+    kwargs: dict[str, object] = {
+        "num_workers": num_workers,
+        "pin_memory": pin_memory,
+    }
+    if num_workers > 0:
+        kwargs["persistent_workers"] = True
+        kwargs["prefetch_factor"] = 2
+    return kwargs
 
 
 if __name__ == "__main__":

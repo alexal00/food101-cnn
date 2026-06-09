@@ -74,19 +74,18 @@ def main() -> None:
         split="val",
         transform=build_eval_transform(config),
     )
+    loader_kwargs = _loader_kwargs(args.num_workers, pin_memory=device.type == "cuda")
     train_loader = DataLoader(
         train_dataset,
         batch_size=int(config["training"]["batch_size"]),
         shuffle=True,
-        num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
+        **loader_kwargs,
     )
     val_loader = DataLoader(
         val_dataset,
         batch_size=int(config["training"]["batch_size"]),
         shuffle=False,
-        num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
+        **loader_kwargs,
     )
 
     model = build_model_from_config(config)
@@ -169,6 +168,18 @@ def main() -> None:
     print(f"validation_loss={final.loss:.6f}")
     print(f"validation_top1={final.top1:.6f}")
     print(f"validation_top5={final.top5:.6f}")
+
+
+def _loader_kwargs(num_workers: int, *, pin_memory: bool) -> dict[str, object]:
+    """Return DataLoader options tuned for repeated training epochs."""
+    kwargs: dict[str, object] = {
+        "num_workers": num_workers,
+        "pin_memory": pin_memory,
+    }
+    if num_workers > 0:
+        kwargs["persistent_workers"] = True
+        kwargs["prefetch_factor"] = 2
+    return kwargs
 
 
 if __name__ == "__main__":

@@ -152,7 +152,11 @@ def _move_batch(batch: Any, device: torch.device) -> tuple[torch.Tensor, torch.T
     if not torch.is_tensor(inputs) or not torch.is_tensor(targets):
         raise TypeError("Inputs and targets must be torch tensors.")
 
-    return inputs.to(device), targets.to(device)
+    non_blocking = device.type == "cuda"
+    return (
+        inputs.to(device, non_blocking=non_blocking),
+        targets.to(device, non_blocking=non_blocking),
+    )
 
 
 def _amp_enabled(device: torch.device, mixed_precision: bool) -> bool:

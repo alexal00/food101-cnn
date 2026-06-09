@@ -25,6 +25,8 @@ def resize_with_padding(
     width, height = rgb_image.size
     if width <= 0 or height <= 0:
         raise ValueError(f"Invalid image dimensions: {width}x{height}")
+    if (width, height) == (size, size):
+        return rgb_image.copy()
 
     scale = min(size / width, size / height)
     resized_width = max(1, round(width * scale))

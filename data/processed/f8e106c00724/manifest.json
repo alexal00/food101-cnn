@@ -1,0 +1,14 @@
+{
+  "cache_version": "padding_resize_rgb_v1",
+  "cached_index_path": "/Users/alex/Documents/IA_aero_upm/food101-cnn/data/processed/f8e106c00724/cached_index.csv",
+  "convert_mode": "RGB",
+  "correct_exif_orientation": true,
+  "image_size": 224,
+  "pad_fill": [
+    0,
+    0,
+    0
+  ],
+  "preprocessing_hash": "f8e106c00724",
+  "resize": "pad_square"
+}

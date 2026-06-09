@@ -19,9 +19,9 @@ ObsidianNotes/
 venv/
 env/
 
-# Local and generated data
+# Local raw data stays ignored; the processed cache is versioned so Colab can
+# train without downloading, indexing, or regenerating resized images.
 data/raw/**
-data/processed/**
 data/reports/**
 outputs/**
 
@@ -42,6 +42,9 @@ outputs/**
 !data/processed/.gitkeep
 !data/reports/
 !data/reports/.gitkeep
+!data/reports/corrupted_images.txt
+!data/reports/dataset_index.csv
+!data/reports/image_validation_report.csv
 !outputs/
 !outputs/**/
 !outputs/**/.gitkeep
