@@ -49,6 +49,22 @@ def test_create_run_paths_and_manifest(tmp_path: Path) -> None:
     assert infer_run_name_from_path(paths.best_checkpoint_path) == run_name
 
 
+def test_infer_run_name_from_colab_run_root_checkpoint() -> None:
+    run_name = "baseline_cnn_simple_20260614-1601_vfull1"
+    checkpoint = (
+        f"/content/food101-runs/{run_name}/checkpoints/{run_name}_best_model.pt"
+    )
+
+    assert infer_run_name_from_path(checkpoint) == run_name
+
+
+def test_infer_run_name_from_standard_artifact_filename() -> None:
+    run_name = "baseline_cnn_simple_20260614-1601_vfull1"
+
+    assert infer_run_name_from_path(f"/tmp/{run_name}_best_model.pt") == run_name
+    assert infer_run_name_from_path(f"/tmp/{run_name}_model.pt") == run_name
+
+
 def test_latest_run_for_model_uses_filename_timestamp(tmp_path: Path) -> None:
     config = load_config("configs/resnet50.yaml")
     older = create_run_paths(tmp_path, build_run_name(config, timestamp="20260601-1200"))

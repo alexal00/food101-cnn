@@ -30,6 +30,21 @@ def test_find_nearest_feature_neighbors() -> None:
     assert neighbors.tolist() == [[0, 1], [1, 0]]
 
 
+def test_find_nearest_feature_neighbors_uses_raw_euclidean_distance() -> None:
+    queries = np.array([[10.0, 0.0]], dtype=np.float32)
+    database = np.array(
+        [
+            [9.0, 5.0],
+            [100.0, 1.0],
+        ],
+        dtype=np.float32,
+    )
+
+    neighbors = find_nearest_feature_neighbors(queries, database, top_k=1)
+
+    assert neighbors.tolist() == [[0]]
+
+
 def test_extract_hidden_features_from_named_layer() -> None:
     model = nn.Sequential(nn.Flatten(), nn.Linear(4, 3), nn.ReLU(), nn.Linear(3, 2))
     dataloader = DataLoader(TensorDataset(torch.ones(2, 1, 2, 2), torch.tensor([0, 1])), batch_size=1)

@@ -2,6 +2,7 @@ import csv
 import json
 from pathlib import Path
 
+import pandas as pd
 import torch
 from torch import nn
 
@@ -16,6 +17,7 @@ from food101_cnn.evaluation.confusion import (
 from food101_cnn.evaluation.errors import (
     collect_misclassifications,
     copy_misclassified_images,
+    save_error_galleries,
     save_misclassifications_csv,
 )
 from food101_cnn.evaluation.latency import measure_inference_latency
@@ -91,6 +93,25 @@ def test_misclassification_csv_and_image_copy(tmp_path: Path) -> None:
         rows = list(csv.DictReader(handle))
     assert rows[0]["predicted_label"] == "pizza"
     assert json.loads(rows[0]["top_k_labels"]) == ["pizza", "ramen"]
+
+
+def test_error_galleries_include_correct_placeholder_for_misclassified_only_source(tmp_path: Path) -> None:
+    rows = pd.DataFrame(
+        [
+            {
+                "image_path": str(tmp_path / "missing.jpg"),
+                "true_class": "ramen",
+                "pred_class": "pizza",
+                "top1_confidence": 0.9,
+                "is_correct": False,
+            }
+        ]
+    )
+
+    outputs = save_error_galleries(rows, tmp_path / "figures", project_root=tmp_path)
+
+    assert outputs["correct_high_confidence"].is_file()
+    assert outputs["correct_high_confidence"].stat().st_size > 0
 
 
 def test_latency_measurement_returns_positive_values() -> None:

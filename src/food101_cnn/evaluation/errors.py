@@ -291,13 +291,12 @@ def save_error_galleries(
     )
 
     correct = frame[frame["is_correct"]].sort_values("top1_confidence", ascending=False).head(limit)
-    if not correct.empty:
-        outputs["correct_high_confidence"] = _save_gallery(
-            correct,
-            directory / "correct_high_confidence.png",
-            "High-Confidence Correct Predictions",
-            project_root=project_root,
-        )
+    outputs["correct_high_confidence"] = _save_gallery(
+        correct,
+        directory / "correct_high_confidence.png",
+        "High-Confidence Correct Predictions",
+        project_root=project_root,
+    )
     return outputs
 
 

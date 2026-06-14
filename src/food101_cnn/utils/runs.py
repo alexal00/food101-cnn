@@ -128,13 +128,24 @@ def create_run_paths(
 
 
 def infer_run_name_from_path(path: str | Path) -> str | None:
-    """Infer the run name from a path under ``outputs/runs/<run_name>/``."""
-    parts = Path(path).expanduser().resolve().parts
-    for index, part in enumerate(parts):
-        if part == "runs" and index + 1 < len(parts):
-            run_name = parts[index + 1]
-            validate_run_name(run_name)
-            return run_name
+    """Infer the run name from a run directory or standard artifact filename."""
+    expanded = Path(path).expanduser()
+    filename = expanded.name
+    for suffix in (
+        "_best_model.pt",
+        "_model.pt",
+        "_model.onnx",
+        "_predictions.csv",
+        "_misclassified.csv",
+    ):
+        if filename.endswith(suffix):
+            run_name = filename[: -len(suffix)]
+            if RUN_NAME_PATTERN.fullmatch(run_name) is not None:
+                return run_name
+
+    for part in reversed(expanded.parts):
+        if RUN_NAME_PATTERN.fullmatch(part) is not None:
+            return part
     return None
 
 

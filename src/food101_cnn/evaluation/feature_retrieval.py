@@ -69,8 +69,8 @@ def find_nearest_feature_neighbors(
     """Return database indices with smallest Euclidean distance per query."""
     if top_k <= 0:
         raise ValueError("top_k must be positive.")
-    queries = _normalize_rows(np.asarray(query_features, dtype=np.float32))
-    database = _normalize_rows(np.asarray(database_features, dtype=np.float32))
+    queries = np.asarray(query_features, dtype=np.float32)
+    database = np.asarray(database_features, dtype=np.float32)
     if queries.ndim != 2 or database.ndim != 2:
         raise ValueError("query_features and database_features must be 2D arrays.")
     if queries.shape[1] != database.shape[1]:
@@ -159,14 +159,6 @@ def _unpack_batch(batch: Any) -> tuple[torch.Tensor, torch.Tensor | None, list[s
     raw_paths = batch[2] if len(batch) > 2 else [""] * inputs.size(0)
     paths = [str(item) for item in raw_paths]
     return inputs, targets, paths
-
-
-def _normalize_rows(features: np.ndarray) -> np.ndarray:
-    if features.ndim != 2:
-        return features
-    norms = np.linalg.norm(features, axis=1, keepdims=True)
-    return np.divide(features, norms, out=np.zeros_like(features), where=norms > 0)
-
 
 def _draw_image_cell(axis, image_path: str, *, title: str, project_root: str | Path | None) -> None:
     resolved = resolve_image_path(image_path, project_root=project_root)
