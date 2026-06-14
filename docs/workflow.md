@@ -22,9 +22,10 @@ execution artifacts.
   - Temporary downloaded data/cache for cloud training.
   - Temporary run outputs before a selected run is archived.
 - Google Drive:
+  - Source data archives used to stage data into Colab runtime storage.
   - Final selected runs only.
   - Final checkpoints, exported models, manifests, and summary reports.
-  - No repository clone, broad dataset copy, partial runs, or routine logs.
+  - No repository clone, live training data root, partial runs, or routine logs.
 
 ## Primary Execution Path
 
@@ -62,10 +63,10 @@ Notebook usage is split by purpose:
 
 Colab uses GitHub for code:
 
-1. Mount Drive only so selected final artifacts can be archived.
+1. Mount Drive only for source/archive fallback.
 2. Clone the configured GitHub branch into `/content/food101-cnn`.
 3. Install the package in editable mode.
-4. Download/cache Food-101 into the temporary Colab runtime, not Drive.
+4. Use the repository cache, or copy/extract Food-101 into the temporary Colab runtime, not Drive.
 5. Train and evaluate through repository scripts.
 6. Copy only selected complete run directories to Drive.
 

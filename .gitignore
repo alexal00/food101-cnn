@@ -8,6 +8,7 @@ __pycache__/
 
 # OS metadata
 .DS_Store
+._*
 
 # Local editor/project notes
 .obsidian/

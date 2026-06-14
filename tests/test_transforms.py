@@ -126,3 +126,40 @@ def test_cache_resized_images_skips_existing_files(tmp_path: Path) -> None:
     assert first.cached == 1
     assert second.cached == 0
     assert second.skipped == 1
+
+
+def test_cache_resized_images_replaces_invalid_existing_files(tmp_path: Path) -> None:
+    original_image = tmp_path / "ramen_0.jpg"
+    Image.new("RGB", (16, 16), color=(20, 100, 200)).save(original_image)
+
+    index_csv = tmp_path / "dataset_index.csv"
+    write_dataset_index(
+        [
+            Food101Record(
+                split="train",
+                official_split="train",
+                label="ramen",
+                label_index=2,
+                relative_path="ramen/ramen_0.jpg",
+                image_path=original_image,
+            )
+        ],
+        index_csv,
+    )
+
+    cache_root = tmp_path / "processed"
+    first = cache_resized_images(index_csv, cache_root, image_size=32)
+    cached_image = first.cache_dir / "images" / "ramen" / "ramen_0.jpg"
+    cached_image.write_text(
+        "version https://git-lfs.github.com/spec/v1\n"
+        "oid sha256:example\n"
+        "size 123\n",
+        encoding="utf-8",
+    )
+
+    second = cache_resized_images(index_csv, cache_root, image_size=32)
+
+    assert second.cached == 1
+    assert second.skipped == 0
+    with Image.open(cached_image) as image:
+        assert image.size == (32, 32)

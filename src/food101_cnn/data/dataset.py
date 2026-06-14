@@ -185,18 +185,21 @@ def _resolve_index_image_path(
     index_dir: str | Path | None = None,
 ) -> Path:
     image_path = Path(row["image_path"]).expanduser()
-    if image_path.is_file() or index_dir is None:
+    if index_dir is None:
         return image_path
 
     base_dir = Path(index_dir).expanduser()
+    cached_candidate = base_dir / "images" / row["relative_path"]
+    if cached_candidate.is_file():
+        return cached_candidate
+
+    if image_path.is_file():
+        return image_path
+
     if not image_path.is_absolute():
         relative_candidate = base_dir / image_path
         if relative_candidate.is_file():
             return relative_candidate
-
-    cached_candidate = base_dir / "images" / row["relative_path"]
-    if cached_candidate.is_file():
-        return cached_candidate
 
     return image_path
 

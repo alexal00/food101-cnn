@@ -186,16 +186,17 @@ Colab cannot see files that exist only on the local machine. The training
 notebook therefore clones the configured GitHub branch into
 `/content/food101-cnn` each session, installs the package, and keeps data and
 routine run outputs in the temporary Colab runtime. Google Drive is mounted only
-to archive selected final complete runs.
+as a source/archive fallback and is not used as the live training data root.
 
 Drive is not the default data source. The Colab notebook clones the repository
 from GitHub, downloads or caches Food-101 inside `/content/food101-cnn/data`,
 and writes temporary run artifacts under `/content/food101-runs`. Drive is used
-only when explicitly archiving selected final complete runs.
+only to copy/extract missing data into `/content` or to archive selected final
+complete runs.
 
 The Colab notebook:
 
-- mounts Google Drive,
+- mounts Google Drive for source/archive fallback,
 - clones the configured GitHub branch into `/content/food101-cnn`,
 - stores temporary data under `/content/food101-cnn/data`,
 - stores temporary run artifacts under `/content/food101-runs`,
@@ -267,7 +268,7 @@ python scripts/train.py \
   --batch-size 32 \
   --device cuda \
   --mixed-precision \
-  --num-workers 2 \
+  --num-workers 8 \
   --run-root /content/food101-runs \
   --log-level INFO
 ```

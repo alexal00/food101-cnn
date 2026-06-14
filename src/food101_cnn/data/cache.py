@@ -57,7 +57,7 @@ def cache_resized_images(
         output_path = images_dir / record.relative_path
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        if output_path.is_file() and not refresh:
+        if output_path.is_file() and not refresh and _cached_image_is_valid(output_path):
             skipped += 1
         else:
             with Image.open(record.image_path) as image:
@@ -140,3 +140,12 @@ def write_cached_index(rows: list[dict[str, Any]], output_csv: str | Path) -> Pa
         writer.writerows(rows)
 
     return path
+
+
+def _cached_image_is_valid(path: Path) -> bool:
+    try:
+        with Image.open(path) as image:
+            image.verify()
+        return True
+    except (OSError, ValueError):
+        return False

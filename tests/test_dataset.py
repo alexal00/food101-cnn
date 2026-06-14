@@ -95,6 +95,103 @@ def test_load_dataset_index_relocates_uploaded_cached_paths(tmp_path: Path) -> N
     assert records[0].image_path == image_path
 
 
+def test_load_dataset_index_prefers_local_cached_image_over_existing_absolute_path(
+    tmp_path: Path,
+) -> None:
+    cache_dir = tmp_path / "processed" / "f8e106c00724"
+    local_image_path = cache_dir / "images" / "apple_pie" / "sample.jpg"
+    local_image_path.parent.mkdir(parents=True)
+    _write_image(local_image_path)
+    drive_image_path = tmp_path / "drive" / "images" / "apple_pie" / "sample.jpg"
+    drive_image_path.parent.mkdir(parents=True)
+    _write_image(drive_image_path)
+    index_csv = cache_dir / "cached_index.csv"
+
+    with index_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "split",
+                "official_split",
+                "label",
+                "label_index",
+                "relative_path",
+                "image_path",
+                "original_image_path",
+                "cached_image_path",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "split": "train",
+                "official_split": "train",
+                "label": "apple_pie",
+                "label_index": "0",
+                "relative_path": "apple_pie/sample.jpg",
+                "image_path": str(drive_image_path),
+                "original_image_path": "/content/drive/raw/food-101/images/apple_pie/sample.jpg",
+                "cached_image_path": str(drive_image_path),
+            }
+        )
+
+    records = load_dataset_index(index_csv)
+
+    assert records[0].image_path == local_image_path
+
+
+def test_validate_index_reports_lfs_pointer_cached_image(tmp_path: Path) -> None:
+    cache_dir = tmp_path / "processed" / "f8e106c00724"
+    pointer_path = cache_dir / "images" / "ramen" / "sample.jpg"
+    pointer_path.parent.mkdir(parents=True)
+    pointer_path.write_text(
+        "version https://git-lfs.github.com/spec/v1\n"
+        "oid sha256:example\n"
+        "size 123\n",
+        encoding="utf-8",
+    )
+    index_csv = cache_dir / "cached_index.csv"
+
+    with index_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "split",
+                "official_split",
+                "label",
+                "label_index",
+                "relative_path",
+                "image_path",
+                "original_image_path",
+                "cached_image_path",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "split": "train",
+                "official_split": "train",
+                "label": "ramen",
+                "label_index": "0",
+                "relative_path": "ramen/sample.jpg",
+                "image_path": str(pointer_path),
+                "original_image_path": "/content/drive/raw/food-101/images/ramen/sample.jpg",
+                "cached_image_path": str(pointer_path),
+            }
+        )
+
+    results = validate_index(
+        index_csv,
+        report_csv=tmp_path / "validation.csv",
+        corrupted_output=tmp_path / "corrupted.txt",
+    )
+
+    assert validation_summary(results) == {"total": 1, "valid": 0, "invalid": 1}
+    assert str(pointer_path.resolve()) in (tmp_path / "corrupted.txt").read_text(
+        encoding="utf-8"
+    )
+
+
 def test_verify_food101_structure_reports_counts(tmp_path: Path) -> None:
     data_root = _make_tiny_food101(tmp_path)
 
