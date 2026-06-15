@@ -1,9 +1,10 @@
 # Food-101 Run Logbook
 
 This logbook is a lightweight committed index of finished runs. It is generated
-from `outputs/runs/*/manifest.json` and intentionally excludes checkpoints,
-TensorBoard logs, cached images, generated figures, and incomplete run
-directories without `manifest.json`.
+from `outputs/runs/*/manifest.json`. In this final deliverable snapshot, selected
+checkpoints, exports, reports, and generated figures are also committed, with
+large binary artifacts stored through Git LFS. TensorBoard logs and incomplete
+run directories without `manifest.json` remain excluded.
 
 Default scope: latest completed run per model.
 

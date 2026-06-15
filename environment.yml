@@ -6,7 +6,10 @@ dependencies:
   - pip>=23
   - ipykernel
   - jupyter
+  - jupyterlab
   - matplotlib
+  - nbconvert
+  - nbformat
   - numpy
   - pandas
   - pillow

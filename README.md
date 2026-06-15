@@ -4,6 +4,8 @@ Modular PyTorch project for Food-101 image classification.
 
 The final course deliverable is `notebooks/food101_CNN_final_project.ipynb`. Reusable logic lives in `src/food101_cnn/`; repeatable command-line entry points live in `scripts/`.
 
+For clone/setup instructions, Git LFS notes, dataset placement, and the recommended local execution path, see `INSTALLATION_AND_USAGE.md`.
+
 ## Project Scope
 
 - CNN-from-scratch baseline for pedagogical comparison.
@@ -40,7 +42,7 @@ food101-cnn/
 └── tests/                    # Lightweight automated tests
 ```
 
-Generated datasets, checkpoints, TensorBoard logs, cached images, and reports are intentionally kept under `data/` and `outputs/`.
+Generated datasets, selected model artifacts, figures, reports, and completed run manifests are intentionally kept under `data/` and `outputs/`. Large dataset/model binaries are stored with Git LFS when they are part of the final deliverable.
 
 ## Run Naming And Tracking
 
@@ -515,12 +517,14 @@ The tests use synthetic tensors/images and do not require the full Food-101 data
 
 Do not commit:
 
-- Food-101 images.
-- Cached resized images.
-- Checkpoints.
 - TensorBoard logs.
-- Generated reports and figures.
+- Raw Food-101 downloads under `data/raw/food-101/images/`.
+- Temporary training scratch outputs, incomplete run directories, archives, and local transfer bundles.
 - Local editor settings, personal notes, reference PDFs, and transfer bundles.
 
-Keep final experiment artifacts locally under `outputs/` and dataset-related generated files under `data/reports/`.
-Keep only lightweight run summaries such as `docs/runs_logbook.md` in Git.
+Commit final deliverable artifacts intentionally:
+
+- Processed Food-101 cache images under `data/processed/` through Git LFS.
+- Selected model and run `.pt` files under `outputs/final_selected/` and completed `outputs/runs/*/` directories through Git LFS.
+- Generated figures, reports, manifests, and notebook outputs required by `notebooks/food101_CNN_final_project.ipynb`.
+- Lightweight run summaries such as `docs/runs_logbook.md`.

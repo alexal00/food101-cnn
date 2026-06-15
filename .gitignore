@@ -52,3 +52,50 @@ outputs/**
 
 # Notebook checkpoints
 .ipynb_checkpoints/
+
+# Final deliverable artifacts are versioned intentionally. Large binary files
+# matched below are stored through Git LFS by .gitattributes.
+!outputs/final_selected/
+!outputs/final_selected/**
+!outputs/figures/**/*.csv
+!outputs/figures/**/*.png
+!outputs/reports/**/*.csv
+!outputs/reports/**/*.json
+!outputs/reports/**/*.md
+!outputs/runs/baseline_cnn_20260602-0000_v1/manifest.json
+!outputs/runs/baseline_cnn_20260602-0000_v1/checkpoints/*.pt
+!outputs/runs/baseline_cnn_20260602-0000_v1/exports/*.pt
+!outputs/runs/baseline_cnn_20260602-0000_v1/figures/**/*.png
+!outputs/runs/baseline_cnn_20260602-0000_v1/reports/*.csv
+!outputs/runs/baseline_cnn_20260602-0000_v1/reports/*.json
+!outputs/runs/baseline_cnn_20260602-0000_v1/reports/*.npz
+!outputs/runs/baseline_cnn_local_20260614-1643_vlocal1/manifest.json
+!outputs/runs/baseline_cnn_local_20260614-1643_vlocal1/checkpoints/*.pt
+!outputs/runs/baseline_cnn_local_20260614-1643_vlocal1/exports/*.pt
+!outputs/runs/baseline_cnn_local_20260614-1643_vlocal1/figures/**/*.png
+!outputs/runs/baseline_cnn_local_20260614-1643_vlocal1/reports/*.csv
+!outputs/runs/baseline_cnn_local_20260614-1643_vlocal1/reports/*.json
+!outputs/runs/baseline_cnn_simple_20260614-1601_vfull1/manifest.json
+!outputs/runs/baseline_cnn_simple_20260614-1601_vfull1/checkpoints/*.pt
+!outputs/runs/baseline_cnn_simple_20260614-1601_vfull1/exports/*.pt
+!outputs/runs/baseline_cnn_simple_20260614-1601_vfull1/figures/**/*.png
+!outputs/runs/baseline_cnn_simple_20260614-1601_vfull1/reports/*.csv
+!outputs/runs/baseline_cnn_simple_20260614-1601_vfull1/reports/*.json
+!outputs/runs/convnext_tiny_20260602-1258_v1/manifest.json
+!outputs/runs/convnext_tiny_20260602-1258_v1/checkpoints/*.pt
+!outputs/runs/convnext_tiny_20260602-1258_v1/exports/*.pt
+!outputs/runs/convnext_tiny_20260602-1258_v1/figures/**/*.png
+!outputs/runs/convnext_tiny_20260602-1258_v1/reports/*.csv
+!outputs/runs/convnext_tiny_20260602-1258_v1/reports/*.json
+!outputs/runs/efficientnet_b0_20260602-0040_v1/manifest.json
+!outputs/runs/efficientnet_b0_20260602-0040_v1/checkpoints/*.pt
+!outputs/runs/efficientnet_b0_20260602-0040_v1/exports/*.pt
+!outputs/runs/efficientnet_b0_20260602-0040_v1/figures/**/*.png
+!outputs/runs/efficientnet_b0_20260602-0040_v1/reports/*.csv
+!outputs/runs/efficientnet_b0_20260602-0040_v1/reports/*.json
+!outputs/runs/resnet50_20260602-0657_v1/manifest.json
+!outputs/runs/resnet50_20260602-0657_v1/checkpoints/*.pt
+!outputs/runs/resnet50_20260602-0657_v1/exports/*.pt
+!outputs/runs/resnet50_20260602-0657_v1/figures/**/*.png
+!outputs/runs/resnet50_20260602-0657_v1/reports/*.csv
+!outputs/runs/resnet50_20260602-0657_v1/reports/*.json

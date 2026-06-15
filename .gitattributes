@@ -7,3 +7,10 @@ data/processed/**/*.webp filter=lfs diff=lfs merge=lfs -text
 # Raw Food-101 images are ignored by default, but use LFS if intentionally added.
 data/raw/food-101/images/**/*.jpg filter=lfs diff=lfs merge=lfs -text
 data/raw/food-101/images/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+
+# Final deliverable model and binary analysis artifacts.
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
+*.ckpt filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
+outputs/**/*.npz filter=lfs diff=lfs merge=lfs -text

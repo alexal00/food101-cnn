@@ -10,6 +10,7 @@ from typing import Callable, Iterable, Iterator
 from PIL import Image
 
 from food101_cnn.data.download import get_food101_dir
+from food101_cnn.utils.paths import find_project_root
 
 INDEX_COLUMNS = [
     "split",
@@ -200,6 +201,28 @@ def _resolve_index_image_path(
         relative_candidate = base_dir / image_path
         if relative_candidate.is_file():
             return relative_candidate
+
+    project_root = find_project_root(base_dir)
+    relative_path = row["relative_path"]
+
+    relocated_raw_candidate = (
+        project_root / "data" / "raw" / "food-101" / "images" / relative_path
+    )
+    if relocated_raw_candidate.is_file():
+        return relocated_raw_candidate
+
+    for cache_dir in sorted((project_root / "data" / "processed").glob("*")):
+        relocated_cached_candidate = cache_dir / "images" / relative_path
+        if relocated_cached_candidate.is_file():
+            return relocated_cached_candidate
+
+    if image_path.is_absolute():
+        parts = image_path.parts
+        for index, part in enumerate(parts):
+            if part == project_root.name:
+                relocated_candidate = project_root.joinpath(*parts[index + 1 :])
+                if relocated_candidate.is_file():
+                    return relocated_candidate
 
     return image_path
 

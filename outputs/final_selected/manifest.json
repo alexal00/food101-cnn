@@ -1,0 +1,19 @@
+{
+  "checkpoint": "/Users/alex/Documents/IA_aero_upm/food101-cnn/outputs/final_selected/final_selected_model.pt",
+  "comparison_row": {
+    "checkpoint": "/Users/alex/Documents/IA_aero_upm/food101-cnn/outputs/runs/convnext_tiny_20260602-1258_v1/checkpoints/convnext_tiny_20260602-1258_v1_best_model.pt",
+    "ece": 0.1847421372591859,
+    "latency_ms": 5.67926969997643,
+    "macro_f1": 0.741737874356727,
+    "model": "convnext_tiny",
+    "notes": "training completed via scripts/train.py; evaluated split=test via scripts/evaluate.py; export attempted via scripts/export_model.py; onnx_export_failed: No module named 'onnxscript'; export attempted via scripts/export_model.py; onnx_export_failed: No module named 'onnxscript'; export attempted via scripts/export_model.py; onnx_export_failed: No module named 'onnxscript'; export attempted via scripts/export_model.py",
+    "params": 27897797,
+    "top1": 0.7430890798568726,
+    "top5": 0.9265742301940918,
+    "trained_at": "20260602-1258",
+    "version": "v1"
+  },
+  "selection_rule": "max top5, then max macro_f1",
+  "source_manifest": "/Users/alex/Documents/IA_aero_upm/food101-cnn/outputs/runs/convnext_tiny_20260602-1258_v1/manifest.json",
+  "source_run_name": "convnext_tiny_20260602-1258_v1"
+}

@@ -140,6 +140,88 @@ def test_load_dataset_index_prefers_local_cached_image_over_existing_absolute_pa
     assert records[0].image_path == local_image_path
 
 
+def test_load_dataset_index_relocates_dataset_report_to_repo_raw_data(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "food101-cnn"
+    project_root.mkdir(parents=True)
+    (project_root / "pyproject.toml").write_text("[project]\nname='test'\n", encoding="utf-8")
+    image_path = project_root / "data" / "raw" / "food-101" / "images" / "apple_pie" / "sample.jpg"
+    image_path.parent.mkdir(parents=True)
+    _write_image(image_path)
+    index_csv = project_root / "data" / "reports" / "dataset_index.csv"
+    index_csv.parent.mkdir(parents=True)
+
+    with index_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "split",
+                "official_split",
+                "label",
+                "label_index",
+                "relative_path",
+                "image_path",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "split": "train",
+                "official_split": "train",
+                "label": "apple_pie",
+                "label_index": "0",
+                "relative_path": "apple_pie/sample.jpg",
+                "image_path": "/Users/alex/Documents/IA_aero_upm/food101-cnn/data/raw/food-101/images/apple_pie/sample.jpg",
+            }
+        )
+
+    records = load_dataset_index(index_csv)
+
+    assert records[0].image_path == image_path
+
+
+def test_load_dataset_index_uses_committed_processed_cache_when_raw_data_is_missing(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "food101-cnn"
+    project_root.mkdir(parents=True)
+    (project_root / "pyproject.toml").write_text("[project]\nname='test'\n", encoding="utf-8")
+    cached_image_path = project_root / "data" / "processed" / "abc123" / "images" / "ramen" / "sample.jpg"
+    cached_image_path.parent.mkdir(parents=True)
+    _write_image(cached_image_path)
+    index_csv = project_root / "data" / "reports" / "dataset_index.csv"
+    index_csv.parent.mkdir(parents=True)
+
+    with index_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "split",
+                "official_split",
+                "label",
+                "label_index",
+                "relative_path",
+                "image_path",
+            ],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "split": "test",
+                "official_split": "test",
+                "label": "ramen",
+                "label_index": "0",
+                "relative_path": "ramen/sample.jpg",
+                "image_path": "/stale/machine/path/food101-cnn/data/raw/food-101/images/ramen/sample.jpg",
+            }
+        )
+
+    records = load_dataset_index(index_csv)
+
+    assert records[0].image_path == cached_image_path
+
+
 def test_validate_index_reports_lfs_pointer_cached_image(tmp_path: Path) -> None:
     cache_dir = tmp_path / "processed" / "f8e106c00724"
     pointer_path = cache_dir / "images" / "ramen" / "sample.jpg"
